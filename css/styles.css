@@ -318,3 +318,35 @@ html[data-skin=dark] .win,html[data-skin=dark] .row{box-shadow:0 0 0 1px rgb(168
 .trace summary{cursor:pointer}
 .trace pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0;font-size:.9em}
 @media(max-width:600px){.acct{margin-left:0;width:100%}}
+
+/* ===== Extra themes =====
+   Each one reuses the modern "classic" layout and just turns the colour dials. */
+html[data-skin=namek]{color-scheme:dark;--bg:#0b1d15;--ink:#eafff3;--mut:#9fd4b8;--line:#245540;--card:#10281e;--soft:#0f2d21;--acc:#3ddc84;--accInk:#04160d;--gold:#eafff3;--or:#3ddc84;--up:#4ade80;--dn:#ff7b72;--star:#ffd23f;--want:#38bdf8;--plank:#2e8b57;--plankD:#1b5e3b}
+html[data-skin=ocean]{color-scheme:light;--bg:#eaf5ff;--ink:#0b2540;--mut:#4a6a88;--line:#c2dbf0;--card:#ffffff;--soft:#f3f9ff;--acc:#1d6fd8;--accInk:#ffffff;--gold:#0b2540;--or:#1d6fd8;--up:#15803d;--dn:#b91c1c;--star:#d99a00;--want:#7c3aed;--plank:#9cc6ea;--plankD:#6fa6d6}
+html[data-skin=ember]{color-scheme:dark;--bg:#1a0d0a;--ink:#fff1e8;--mut:#e3b5a1;--line:#4d2419;--card:#24120d;--soft:#2c1610;--acc:#ff6a2b;--accInk:#1a0800;--gold:#fff1e8;--or:#ff8a4c;--up:#4ade80;--dn:#ff6b6b;--star:#ffb020;--want:#38bdf8;--plank:#b4431c;--plankD:#6d2410}
+
+/* Kawaii: pastel pink, rounded type, bows, hearts and sparkles */
+html[data-skin=kawaii]{color-scheme:light;--bg:#fff0f6;--ink:#5a2a44;--mut:#a3627f;--line:#ffc4dc;--card:#ffffff;--soft:#fff7fb;--acc:#ff5fa2;--accInk:#ffffff;--gold:#5a2a44;--or:#ff5fa2;--up:#16a34a;--dn:#e11d48;--star:#ff7eb6;--want:#a78bfa;--plank:#ffb3d1;--plankD:#ff8fbd;
+  --px:"Mochiy Pop One","M PLUS Rounded 1c",system-ui,sans-serif;--vt:"M PLUS Rounded 1c",system-ui,sans-serif;
+  --bow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 40'%3E%3Cg stroke='%23d6407f' stroke-width='2' stroke-linejoin='round'%3E%3Cpath fill='%23ff7eb6' d='M29 22 L21 38 L26.5 35 L30 39 L31.5 23Z'/%3E%3Cpath fill='%23ff7eb6' d='M35 22 L43 38 L37.5 35 L34 39 L32.5 23Z'/%3E%3Cpath fill='%23ff9cc8' d='M30 18 C20 1 3 4 5 16 C7 29 22 27 30 22Z'/%3E%3Cpath fill='%23ff9cc8' d='M34 18 C44 1 61 4 59 16 C57 29 42 27 34 22Z'/%3E%3Cpath fill='none' stroke='%23ffffff' stroke-opacity='.7' d='M12 12 C15 9 20 10 23 14 M52 12 C49 9 44 10 41 14'/%3E%3Crect x='26.5' y='13.5' width='11' height='11' rx='4.5' fill='%23ff5fa2'/%3E%3C/g%3E%3C/svg%3E")}
+html[data-skin=kawaii] body{background-color:var(--bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg opacity='.35'%3E%3Cpath fill='%23ff9cc8' d='M30 46 C30 46 18 38 18 30 C18 25 22 22 26 22 C28 22 30 23.5 30 25.5 C30 23.5 32 22 34 22 C38 22 42 25 42 30 C42 38 30 46 30 46Z'/%3E%3Cpath fill='%23ffb3d1' transform='translate(104 96)' d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z'/%3E%3Cpath fill='%23ffc4dc' transform='translate(100 30) scale(.6)' d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z'/%3E%3Ccircle cx='60' cy='110' r='3' fill='%23ffb3d1'/%3E%3C/g%3E%3C/svg%3E")}
+html[data-skin=kawaii] .win{position:relative;border:2px solid var(--line);border-radius:22px;box-shadow:0 6px 0 #ffd6e7}
+html[data-skin=kawaii] header .win::before,html[data-skin=kawaii] footer .win::before,html[data-skin=kawaii] .scpanel::before,html[data-skin=kawaii] .doc::before{content:"";position:absolute;top:-17px;left:50%;translate:-50% 0;width:54px;height:34px;background:var(--bow) no-repeat center/contain;pointer-events:none;filter:drop-shadow(0 2px 0 #fff)}
+html[data-skin=kawaii] h1{font:400 clamp(30px,5vw,46px)/1.15 var(--px);color:var(--acc);letter-spacing:0;text-shadow:2px 2px 0 #fff,4px 4px 0 #ffd6e7}
+html[data-skin=kawaii] h1::after{content:" ♡";color:#ff9cc8}
+html[data-skin=kawaii] .tlh h2,html[data-skin=kawaii] .ft h2,html[data-skin=kawaii] .sec,html[data-skin=kawaii] .skinbar label,html[data-skin=kawaii] .shd h2,html[data-skin=kawaii] .doc h2{font:400 15px/1.4 var(--px);color:var(--acc)}
+html[data-skin=kawaii] .pbtn,html[data-skin=kawaii] .tg button,html[data-skin=kawaii] .x,html[data-skin=kawaii] .chip{border-radius:999px;font-family:var(--px);font-weight:400}
+html[data-skin=kawaii] .inp{border-radius:16px;border:2px solid var(--line)}
+html[data-skin=kawaii] .row{border:2px solid var(--line);border-radius:20px}
+html[data-skin=kawaii] .row:hover,html[data-skin=kawaii] .row:focus-within{border-color:var(--acc);background:#fff7fb}
+html[data-skin=kawaii] .th,html[data-skin=kawaii] .port,html[data-skin=kawaii] .fig,html[data-skin=kawaii] .pl{border-radius:18px;border:2px solid var(--line)}
+html[data-skin=kawaii] .st{border-radius:16px;border:2px solid var(--line);background:#fff7fb}
+html[data-skin=kawaii] .st b,html[data-skin=kawaii] .pl .lv,html[data-skin=kawaii] .val{font-family:var(--px);font-weight:400}
+html[data-skin=kawaii] .yr .b{border-radius:999px 999px 4px 4px;background:#ffd6e7}
+html[data-skin=kawaii] .yr .o{background:var(--acc);border-radius:inherit}
+html[data-skin=kawaii] .k1{background:#ffd6e7}
+html[data-skin=kawaii] .shelf{border:2px solid var(--line);border-radius:22px}
+html[data-skin=kawaii] .bdg{border:2px solid var(--line);border-radius:18px}
+html[data-skin=kawaii] .toast,html[data-skin=kawaii] .undo{border-radius:999px}
+html[data-skin=kawaii] .stars{letter-spacing:2px}
+html[data-skin=kawaii] .doc a,html[data-skin=kawaii] .doc h2{color:var(--acc)}

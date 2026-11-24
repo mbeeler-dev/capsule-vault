@@ -1,7 +1,7 @@
 // Capsule Vault: a Dragon Ball S.H.Figuarts collection tracker.
 // Data flow: an action changes `state` -> persist() saves it -> render() redraws the screen.
 import { RAW } from './catalog.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, AI_ENABLED } from './config.js';
 
 // Supabase client (accounts, database, photo storage). null = local-only mode.
 const sb = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
@@ -629,14 +629,18 @@ $('askChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(
 $('askStop').addEventListener('click',()=>{if(askCtl)askCtl.abort()});
 $('askClr').addEventListener('click',()=>{turns=[];$('chat').innerHTML='';$('askClr').classList.add('hide')});
 
+// Every theme except Retro builds on the modern "classic" layout and only changes colours (and fonts for Kawaii).
+const SKINS=['light','dark','namek','ocean','ember','kawaii'];
 function setSkin(k){
   const r=document.documentElement;
-  if(k==='light'||k==='dark'){r.dataset.skin=k;r.classList.add('classic')}else{delete r.dataset.skin;r.classList.remove('classic');k='retro'}
+  if(SKINS.includes(k)){r.dataset.skin=k;r.classList.add('classic')}else{delete r.dataset.skin;r.classList.remove('classic');k='retro'}
   $('skin').value=k;
   try{localStorage.setItem('capsule-vault-skin',k)}catch(e){}
   chart();
 }
 $('skin').value=document.documentElement.dataset.skin||'retro';
+// The AI Lab stays hidden until the AI server function is deployed (see README).
+if(!AI_ENABLED){const t=document.querySelector('[data-v="ai"]');if(t)t.remove()}
 $('skin').addEventListener('change',()=>setSkin($('skin').value));
 
 render();

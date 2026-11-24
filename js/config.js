@@ -6,3 +6,6 @@
 
 export const SUPABASE_URL = 'https://jfpqklftauodrxeloelh.supabase.co';
 export const SUPABASE_ANON_KEY = 'sb_publishable_iiKLbKQa95e79rxK5GBbDg_hFQ8lvad'; // publishable key (safe in the browser)
+
+// Turn this on after deploying supabase/functions/ai and setting ANTHROPIC_API_KEY (see README).
+export const AI_ENABLED = false;
