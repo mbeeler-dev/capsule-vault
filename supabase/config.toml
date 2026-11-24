@@ -1,0 +1,4 @@
+# The ai function checks the user's sign-in itself (see functions/ai/index.ts),
+# which works with Supabase's newer API keys, so the gateway's older JWT check is off.
+[functions.ai]
+verify_jwt = false
