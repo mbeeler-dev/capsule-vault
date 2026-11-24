@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capsule Vault</title>
+<meta name="description" content="Track your Dragon Ball S.H.Figuarts collection: what you own, what it's worth, and what to buy next.">
+<meta name="theme-color" content="#07070d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{const k=localStorage.getItem('capsule-vault-skin');if(k==='light'||k==='dark'){document.documentElement.dataset.skin=k;document.documentElement.classList.add('classic')}}catch(e){}</script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cap" viewBox="0 0 16 16" shape-rendering="crispEdges">
+    <path fill="#000" d="M6 0h4v1h1v1h1v13h-1v1H5v-1H4V2h1V1h1z"/>
+    <path fill="currentColor" d="M6 1h4v1h1v5H5V2h1z"/>
+    <path fill="#000" opacity=".28" d="M10 2h1v5h-1z"/>
+    <path fill="#fff" d="M6 2h1v4H6z"/>
+    <path fill="#2a2d45" d="M5 7h6v2H5z"/>
+    <path fill="#8a90b8" d="M5 8h6v1H5z"/>
+    <path fill="#e0e3f0" d="M5 9h6v5h-1v1H6v-1H5z"/>
+    <path fill="#9aa0c0" d="M10 9h1v5h-1z"/>
+    <path fill="#fff" d="M6 10h1v3H6z"/>
+    <path fill="currentColor" d="M8 11h1v2H8z"/>
+  </symbol>
+  <symbol id="medal" viewBox="0 0 16 16" shape-rendering="crispEdges">
+    <path fill="#000" d="M3 0h4v4h2V0h4v5h-1v1h1v1h1v6h-1v1h-1v1H5v-1H4v-1H3V7h1V6h1V5H3z"/>
+    <path fill="#ff4d3d" d="M4 1h2v4H4z"/><path fill="#38bdf8" d="M10 1h2v4h-2z"/>
+    <path fill="#c98a00" d="M6 6h4v1h1v1h1v4h-1v1h-1v1H6v-1H5v-1H4V8h1V7h1z"/>
+    <path fill="#ffd23f" d="M6 7h4v1h1v4h-1v1H6v-1H5V8h1z"/>
+    <path fill="#fff" d="M7 8h2v1h1v1H9v2H7v-2H6V9h1z"/>
+  </symbol>
+</svg>
+
+<header class="band"><div class="in skinbar">
+  <label for="skin">THEME</label>
+  <select id="skin" class="inp">
+    <option value="retro">Retro (8-bit)</option>
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
+  <span class="acct"><span id="who" class="who"></span><button class="pbtn" id="authBtn">SIGN IN</button></span>
+</div><div class="in top">
+  <div class="win title">
+    <h1>CAPSULE<br>VAULT</h1>
+    <p class="sub">Every Dragon Ball S.H.Figuarts, 2009 to 2027. Collect them, price them, power up your shelf.</p>
+    <div class="stats">
+      <div class="st"><b id="sOwn">0</b><span id="sOwnL">owned</span></div>
+      <div class="st"><b id="sVal">$0</b><span>power level (value)</span></div>
+      <div class="st"><b id="sPaid">$0</b><span>total paid</span></div>
+      <div class="st" id="sGainBox"><b id="sGain">$0</b><span>gain or loss</span></div>
+    </div>
+  </div>
+  <div class="win tl">
+    <div class="tlh"><h2 id="tlT">RELEASES BY YEAR</h2><span class="key"><i class="k1"></i>released<i class="k2"></i>owned</span></div>
+    <div class="yrs" id="yrs"></div>
+    <div class="lbl" id="lbl"></div>
+  </div>
+</div></header>
+
+<div class="band bar"><div class="in">
+  <div class="tabs" id="tabs">
+    <button class="pbtn" data-v="all" aria-pressed="true">ROSTER<em id="cAll"></em></button>
+    <button class="pbtn" data-v="own" aria-pressed="false">OWNED<em id="cOwn"></em></button>
+    <button class="pbtn" data-v="want" aria-pressed="false">WISHLIST<em id="cWant"></em></button>
+    <button class="pbtn" data-v="deal" aria-pressed="false" id="tDeal">DEALS<em id="cDeal"></em></button>
+    <button class="pbtn" data-v="soon" aria-pressed="false">COMING<em id="cSoon"></em></button>
+    <button class="pbtn" data-v="shelf" aria-pressed="false">SHELF</button>
+    <button class="pbtn" data-v="badges" aria-pressed="false">BADGES<em id="cBadge"></em></button>
+    <button class="pbtn" data-v="ai" aria-pressed="false">AI LAB</button>
+    <button class="pbtn gold" id="wBtn">★ MAKE A WISH</button>
+  </div>
+  <div class="f" id="fbox">
+    <input id="q" class="inp q" type="search" placeholder="Search Goku, Vegeta, Cell..." aria-label="Search figures">
+    <select id="fs" class="inp" aria-label="Series"><option value="">All series</option></select>
+    <select id="ft" class="inp" aria-label="Release type"><option value="">All types</option></select>
+    <select id="so" class="inp" aria-label="Sort">
+      <option value="new">Newest</option><option value="old">Oldest</option><option value="az">A to Z</option><option value="val">Top value</option><option value="gain">Top gain</option><option value="rare">Rarest</option>
+    </select>
+  </div>
+</div></div>
+
+<main class="band" style="padding-top:12px"><div class="in">
+  <ul class="list" id="list"></ul>
+  <div id="vShelf" class="hide">
+    <div class="win scpanel">
+      <h3 class="sec">SHARE YOUR SHELF</h3>
+      <p class="wsub" id="scHelp">Publish a read-only showcase of your shelf. Anyone you share the app with can open the link and see your figures and photos, but they can't change anything.</p>
+      <div class="scrow">
+        <input id="scName" class="inp" maxlength="40" placeholder="Display name, e.g. Kaiden" aria-label="Display name for your showcase">
+        <label class="chk"><input type="checkbox" id="scVals"> Show values</label>
+      </div>
+      <div class="pacts">
+        <button class="pbtn gold" id="scPub">PUBLISH</button>
+        <button class="pbtn hide" id="scCopy">COPY LINK</button>
+        <button class="pbtn hide" id="scView">PREVIEW</button>
+        <button class="pbtn hide" id="scDown">TAKE DOWN</button>
+      </div>
+      <p class="note" id="scMsg"></p>
+    </div>
+    <p class="shsum" id="shSum"></p>
+    <div class="shelf" id="shelf"></div>
+  </div>
+  <div id="vAi" class="hide">
+    <div class="seg aiseg" id="aiSeg">
+      <button class="pbtn" data-t="tId" aria-pressed="true">SNAP TO ID</button>
+      <button class="pbtn" data-t="tBoot" aria-pressed="false">BOOTLEG CHECK</button>
+      <button class="pbtn" data-t="tAsk" aria-pressed="false">ASK YOUR VAULT</button>
+    </div>
+    <p class="note" id="aiOff" style="margin-top:0"></p>
+
+    <div id="tId" class="win aip">
+      <h3 class="sec">SNAP TO IDENTIFY</h3>
+      <p class="wsub">Take or choose a photo of a figure, loose or boxed. The AI matches it to the catalog and gives its top guesses with a confidence score.</p>
+      <div class="pacts"><button class="pbtn gold" id="idPick">TAKE OR CHOOSE PHOTO</button><input type="file" id="idFile" accept="image/*" hidden></div>
+      <div class="idgrid"><div class="idprev" id="idPrev"></div><div id="idOut" class="aiout"></div></div>
+    </div>
+
+    <div id="tBoot" class="win aip hide">
+      <h3 class="sec">BOOTLEG RED FLAGS</h3>
+      <p class="wsub">Paste a listing and add its photos. The AI points out warning signs to double-check before you buy. It flags risks, it can't prove a figure is real or fake.</p>
+      <label class="fl">Which figure (optional)<input id="btFig" class="inp" list="catList" placeholder="Start typing, e.g. Perfect Cell"></label>
+      <div class="grid2">
+        <label class="fl">Asking price ($)<input id="btPrice" class="inp" type="number" inputmode="decimal" min="0" step="0.01"></label>
+        <label class="fl">Ships from<input id="btFrom" class="inp" placeholder="e.g. Ohio, USA or Shenzhen"></label>
+        <label class="fl">Seller info<input id="btSeller" class="inp" placeholder="e.g. 12 reviews, new account"></label>
+      </div>
+      <label class="fl">Listing title and description<textarea id="btTxt" class="inp" rows="4" placeholder="Paste the listing text here"></textarea></label>
+      <div class="pacts"><button class="pbtn" id="btPick">ADD LISTING PHOTOS</button><button class="pbtn hide" id="btClr">CLEAR PHOTOS</button><input type="file" id="btFile" accept="image/*" multiple hidden></div>
+      <div class="bthumbs" id="btThumbs"></div>
+      <div class="pacts"><button class="pbtn gold" id="btGo">CHECK LISTING</button></div>
+      <div id="btOut" class="aiout"></div>
+    </div>
+
+    <div id="tAsk" class="win aip hide">
+      <h3 class="sec">ASK YOUR VAULT</h3>
+      <p class="wsub">Ask anything about your collection. The AI looks up your real data before answering instead of guessing.</p>
+      <div class="chips" id="askChips">
+        <button class="chip">What's my most valuable figure?</button>
+        <button class="chip">Which Vegeta figures am I missing?</button>
+        <button class="chip">How much have I spent on event exclusives?</button>
+        <button class="chip">What should I buy next under $100?</button>
+      </div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="logr"><input id="askIn" class="inp" placeholder="Ask about your figures..." aria-label="Ask your vault"><button class="pbtn gold" id="askGo">ASK</button></div>
+      <div class="pacts"><button class="pbtn hide" id="askStop">STOP</button><button class="pbtn hide" id="askClr">NEW CHAT</button></div>
+    </div>
+    <datalist id="catList"></datalist>
+  </div>
+  <div id="vBadges" class="hide">
+    <h3 class="sec bhd" id="bSum"></h3>
+    <div class="bgrid" id="bgrid"></div>
+    <h3 class="sec bhd">CHARACTER COMPLETION</h3>
+    <p class="note" style="margin-top:0">Tap a character to see every release in the roster.</p>
+    <div class="chars" id="chars"></div>
+  </div>
+  <p class="note">Catalog from the Kanzenshuu S.H.Figuarts list and Tamashii Web announcements, current to November 2026. Dates are Japanese release months. Rarity stars are an estimate from how each figure was sold.</p>
+</div></main>
+
+<footer class="band"><div class="in">
+  <div class="ft">
+    <div class="win">
+      <h2>NEW ENTRY</h2>
+      <p>Add a release that isn't listed, a variant or a reissue.</p>
+      <input id="nName" class="inp" placeholder="Figure name" aria-label="New figure name" style="margin-bottom:8px">
+      <div class="logr"><input id="nDate" class="inp" type="month" aria-label="Release month"><button class="pbtn gold" id="nAdd">ADD</button></div>
+    </div>
+    <div class="win">
+      <h2>SAVE FILE</h2>
+      <p>Copy your whole collection as text and keep it somewhere safe.</p>
+      <button class="pbtn" id="bCopy">COPY BACKUP</button>
+      <p id="bMsg" class="note"></p>
+    </div>
+    <div class="win">
+      <h2>LOAD FILE</h2>
+      <p>Paste a backup here. This replaces your current data.</p>
+      <textarea id="rTxt" class="inp" aria-label="Paste backup"></textarea>
+      <button class="pbtn" id="rGo" style="margin-top:8px">LOAD</button>
+      <p id="rMsg" class="note"></p>
+    </div>
+  </div>
+  <p class="sync" id="sync">Saved on this device.</p>
+</div></footer>
+
+<div class="scrim" id="wish" role="dialog" aria-modal="true" aria-labelledby="wTitle">
+  <div class="win sheet wsheet">
+    <div class="shd"><h2 id="wTitle">★ MAKE A WISH</h2><button class="x" id="wX" aria-label="Close">X</button></div>
+    <p class="wsub">Set your budget and the vault picks your next figure from your wishlist. Deals get extra luck.</p>
+    <div class="logr"><input id="wBud" class="inp" type="number" inputmode="decimal" min="0" step="1" placeholder="Budget, e.g. 80" aria-label="Budget in dollars"><button class="pbtn gold" id="wGo">GRANT</button></div>
+    <div id="wRes" class="wres"></div>
+  </div>
+</div>
+
+
+<div class="scrim" id="auth" role="dialog" aria-modal="true" aria-labelledby="aTitle">
+  <div class="win sheet wsheet">
+    <div class="shd"><h2 id="aTitle">SIGN IN</h2><button class="x" id="aX" aria-label="Close">X</button></div>
+    <p class="wsub">Enter your email and we'll send you a sign-in link. No password needed. Signing in syncs your vault across devices and unlocks photos, showcases and the AI Lab.</p>
+    <div class="logr"><input id="aEmail" class="inp" type="email" autocomplete="email" placeholder="you@example.com" aria-label="Email address"><button class="pbtn gold" id="aGo">SEND LINK</button></div>
+    <p class="note" id="aMsg"></p>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="undo" id="undo" role="status" aria-live="polite"><span id="undoT"></span><button class="pbtn gold" id="undoB">UNDO</button></div>
+
+<section id="scPage" class="hide">
+  <header class="band"><div class="in">
+    <div class="win title scHead">
+      <div>
+        <h1 id="spName">SHOWCASE</h1>
+        <p class="sub" id="spSub"></p>
+      </div>
+      <button class="pbtn gold" id="spBack">OPEN MY OWN VAULT</button>
+    </div>
+  </div></header>
+  <main class="band" style="padding-top:0"><div class="in">
+    <p class="shsum" id="spSum"></p>
+    <div class="shelf" id="spShelf"></div>
+    <p class="note">Shared from Capsule Vault, a Dragon Ball S.H.Figuarts collection tracker.</p>
+  </div></main>
+</section>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="eName">
+  <div class="win sheet">
+    <div class="shd"><div><h2 id="eName"></h2><div class="meta" id="eMeta"></div></div><button class="x" id="eX" aria-label="Close">X</button></div>
+    <div class="sgrid">
+      <div>
+        <div class="port" id="ePort"></div>
+        <div class="pacts">
+          <button class="pbtn gold hide" id="eUp">UPLOAD PHOTO</button>
+          <button class="pbtn hide" id="eRm">REMOVE PHOTO</button>
+          <a class="pbtn" id="eG" target="_blank" rel="noopener">FIND PHOTOS</a>
+          <a class="pbtn" id="eB" target="_blank" rel="noopener">EBAY SOLD</a>
+          <input type="file" id="eFile" accept="image/*" hidden>
+        </div>
+        <p class="note" id="eUpMsg"></p>
+      </div>
+      <div>
+        <div class="pl">
+          <div class="sec">POWER LEVEL</div>
+          <div class="lv" id="eLv">--</div>
+          <div class="hp" id="eHp"><i></i></div>
+          <div class="meta" id="eHpT" style="margin-top:4px"></div>
+        </div>
+        <dl class="kv" id="eKv"></dl>
+      </div>
+    </div>
+    <div class="fig" id="eFig"><svg id="eChart" aria-label="Value history chart"></svg></div>
+    <div class="logr"><input id="eLog" class="inp" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Log today's value, e.g. a recent sale" aria-label="Log a value"><button class="pbtn gold" id="eLogB">LOG</button></div>
+    <ol class="hist" id="eHist"></ol>
+    <div class="seg" id="eSeg">
+      <button class="pbtn" data-s="" aria-pressed="false">NONE</button>
+      <button class="pbtn" data-s="want" aria-pressed="false">WANT</button>
+      <button class="pbtn" data-s="own" aria-pressed="false">OWN</button>
+    </div>
+    <div class="grid2">
+      <label class="fl">Paid ($)<input id="ePaid" class="inp" type="number" inputmode="decimal" min="0" step="0.01"></label>
+      <label class="fl">Current value ($)<input id="eVal" class="inp" type="number" inputmode="decimal" min="0" step="0.01"></label>
+      <label class="fl">Original retail ($)<input id="eMsrp" class="inp" type="number" inputmode="decimal" min="0" step="0.01"></label>
+      <label class="fl">Condition<select id="eCond" class="inp"><option value="">—</option><option>Sealed / MISB</option><option>Opened, complete</option><option>Loose</option><option>Missing parts</option></select></label>
+      <label class="fl">Bought on<input id="eDate" class="inp" type="date"></label>
+      <label class="fl">Wishlist target ($)<input id="eTarget" class="inp" type="number" inputmode="decimal" min="0" step="0.01"></label>
+    </div>
+    <label class="fl" style="margin-top:10px">Notes<textarea id="eNotes" class="inp" rows="2" placeholder="Where you bought it, box condition, bonus parts..."></textarea></label>
+    <div class="acts">
+      <button class="pbtn hide" id="eDel">DELETE ENTRY</button>
+      <button class="pbtn gold" id="eDone" style="margin-left:auto">DONE</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
