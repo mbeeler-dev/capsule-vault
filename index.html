@@ -68,6 +68,7 @@
 <div class="band bar"><div class="in">
   <div class="tabs" id="tabs">
     <button class="pbtn" data-v="all" aria-pressed="true">ROSTER<em id="cAll"></em></button>
+    <button class="pbtn tpb" data-v="tp" aria-pressed="false" title="Independent, unlicensed makers">3RD PARTY<em id="cTp"></em></button>
     <button class="pbtn" data-v="own" aria-pressed="false">OWNED<em id="cOwn"></em></button>
     <button class="pbtn" data-v="want" aria-pressed="false">WISHLIST<em id="cWant"></em></button>
     <button class="pbtn" data-v="deal" aria-pressed="false" id="tDeal">DEALS<em id="cDeal"></em></button>
@@ -81,6 +82,7 @@
     <input id="q" class="inp q" type="search" placeholder="Search Goku, Vegeta, Cell..." aria-label="Search figures">
     <select id="fs" class="inp" aria-label="Series"><option value="">All series</option></select>
     <select id="ft" class="inp" aria-label="Release type"><option value="">All types</option></select>
+    <select id="fb" class="inp hide" aria-label="Maker"><option value="">All makers</option></select>
     <select id="so" class="inp" aria-label="Sort">
       <option value="new">Newest</option><option value="old">Oldest</option><option value="az">A to Z</option><option value="val">Top value</option><option value="gain">Top gain</option><option value="rare">Rarest</option>
     </select>
@@ -88,6 +90,11 @@
 </div></div>
 
 <main class="band" style="padding-top:12px"><div class="in">
+  <div id="tpNote" class="win tpnote hide">
+    <h3 class="sec">3RD PARTY FIGURES</h3>
+    <p>Releases from independent makers like Demoniacal Fit, Kong Studios and Tonsen Arttoys. They are unlicensed and not made by or affiliated with Bandai, but they are original sculpts, not bootleg copies of S.H.Figuarts. They're kept out of the official roster, timeline and character completion, but anything you own still counts toward your collection value and price tracking.</p>
+    <p class="note">Release months and launch prices come from listacompletade.com and dragonballactionfigures.com. Some fan-made designs (Dragon Ball AF) never appeared in the official series.</p>
+  </div>
   <ul class="list" id="list"></ul>
   <div id="vShelf" class="hide">
     <div class="win scpanel">

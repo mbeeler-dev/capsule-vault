@@ -1,6 +1,7 @@
 // Capsule Vault: a Dragon Ball S.H.Figuarts collection tracker.
 // Data flow: an action changes `state` -> persist() saves it -> render() redraws the screen.
 import { RAW } from './catalog.js';
+import { TP } from './thirdparty.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, AI_ENABLED } from './config.js';
 
 // Supabase client (accounts, database, photo storage). null = local-only mode.
@@ -11,14 +12,17 @@ let myUid = null;      // the signed-in user's id, or null
 let dirty = false;     // true while a change hasn't reached the cloud yet
 
 
-const SER={D:'Dragon Ball',Z:'Dragon Ball Z',S:'Dragon Ball Super',GT:'Dragon Ball GT',DA:'Dragon Ball Daima',G:'Games'};
-const SCOL={D:'#ff8a1c',Z:'#ff4d3d',S:'#38bdf8',GT:'#c084fc',DA:'#4ade80',G:'#f472b6','':'#9aa0c0'};
-const TYP={R:'Retail',W:'Web exclusive',E:'Event exclusive',S:'Store exclusive',C:'Custom'};
-const RAR={R:1,W:2,S:3,E:4,C:0};
+const SER={D:'Dragon Ball',Z:'Dragon Ball Z',S:'Dragon Ball Super',GT:'Dragon Ball GT',DA:'Dragon Ball Daima',H:'Dragon Ball Heroes',AF:'Dragon Ball AF (fan-made)',G:'Games'};
+const SCOL={D:'#ff8a1c',Z:'#ff4d3d',S:'#38bdf8',GT:'#c084fc',DA:'#4ade80',H:'#facc15',AF:'#94a3b8',G:'#f472b6','':'#9aa0c0'};
+const TYP={R:'Retail',W:'Web exclusive',E:'Event exclusive',S:'Store exclusive',C:'Custom','3P':'3rd party'};
+const RAR={R:1,W:2,S:3,E:4,C:0,'3P':0};
 const RARN=['Unknown','Common','Uncommon','Rare','Ultra rare'];
 const NOW=new Date().toISOString().slice(0,7); // current month, e.g. 2026-11
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const CAT=RAW.trim().split('\n').map(l=>{const [id,n,d,t,s]=l.split('|');return{id:'b'+id,no:id,n,d,t,s}});
+// Third-party figures: tp:true keeps them out of the official roster, timeline and character completion.
+const TPC=TP.trim().split('\n').map(l=>{const [id,br,n,d,s,rt,ch]=l.split('|');return{id:'t'+id,no:id.startsWith('df')?id.slice(2):'',n,d,t:'3P',s,tp:true,br,rt:rt?+rt:null,ch:ch||''}});
+const BRANDS=[...new Set(TPC.map(x=>x.br))].sort((a,b)=>a.localeCompare(b));
 const KEY='capsule-vault-v1';
 const $=i=>document.getElementById(i);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -36,11 +40,13 @@ const norm=o=>{const s=fresh();if(o&&typeof o==='object'){if(o.items&&typeof o.i
 let state=fresh();
 try{const r=localStorage.getItem(KEY);if(r)state=norm(JSON.parse(r))}catch(e){}
 let view='all',year=null,cur=null,ref=null,assets=null,writing=false,again=false,saveT=null;
-const all=()=>CAT.concat(state.custom.map(c=>({id:c.id,no:'',n:c.n,d:c.d||'',t:'C',s:''})));
+const all=()=>CAT.concat(TPC,state.custom.map(c=>({id:c.id,no:'',n:c.n,d:c.d||'',t:'C',s:''})));
 const it=id=>state.items[id]||{};
 const valOf=x=>{const i=it(x.id);const h=i.hist||[];return i.val!=null?i.val:(h.length?h[h.length-1][1]:null)};
 const capSvg=(s,big)=>`<svg viewBox="0 0 16 16" style="color:${SCOL[s]||SCOL['']}" aria-hidden="true"><use href="#cap"/></svg>`;
 const isDeal=x=>{const i=it(x.id);if(i.s!=='want'||i.target==null)return false;const v=valOf(x);return v!=null&&v<=i.target};
+const retail=x=>{const m=it(x.id).msrp;return m!=null?m:(x.rt??null)};
+const tpTag=x=>x.tp?`<span class="tp3" title="3rd party figure by ${esc(x.br)}">3P</span>`:'';
 const thumb=(x,i)=>okId(i.photo)?`<img src="${esc(photoUrl(i.photo))}" alt="" loading="lazy">`:capSvg(x.s);
 
 function setSync(t){$('sync').textContent=t}
@@ -139,7 +145,7 @@ async function route(){
     const d=row.data||{},figs=Array.isArray(d.figs)?d.figs:[];
     const nm=String(d.name||'').slice(0,40);
     $('spName').textContent=nm?nm.toUpperCase()+"'S VAULT":'A COLLECTOR’S VAULT';
-    $('spSub').textContent=`${figs.length} Dragon Ball S.H.Figuarts on display`+(typeof d.updated==='string'?' · updated '+d.updated:'');
+    $('spSub').textContent=`${figs.length} Dragon Ball figure${figs.length===1?'':'s'} on display`+(typeof d.updated==='string'?' · updated '+d.updated:'');
     $('spSum').textContent=typeof d.total==='number'&&d.total>0?'Collection value about '+money(d.total):'';
     $('spShelf').innerHTML=figs.length?figs.map(f=>{const x={s:typeof f.s==='string'?f.s:''};return `<div class="sh"><span class="pic">${okId(f.p)?`<img src="${esc(photoUrl(f.p))}" alt="" loading="lazy">`:capSvg(x.s)}</span><span class="cap">${esc(f.n)}</span><span class="pv">${typeof f.v==='number'?esc(money2(f.v)):'&nbsp;'}</span></div>`}).join(''):'<p class="empty" style="grid-column:1/-1">This shelf is empty for now.</p>';
   }catch(e){$('spSub').textContent="Couldn't load this showcase right now."}
@@ -148,35 +154,41 @@ window.addEventListener('hashchange',route);
 $('spBack').addEventListener('click',()=>{location.hash='';route();render()});
 
 function stats(){
-  const L=all();let own=0,paid=0,val=0,want=0,soon=0,deal=0;
-  for(const x of L){const i=it(x.id);if(x.d>NOW)soon++;if(i.s==='want')want++;if(isDeal(x))deal++;if(i.s==='own'){own++;paid+=i.paid||0;const v=valOf(x);val+=v!=null?v:(i.paid||0)}}
-  $('sOwn').textContent=own+'/'+L.length;$('sOwnL').textContent='figures owned';
+  const L=all();let own=0,ownTp=0,paid=0,val=0,want=0,soon=0,deal=0;
+  for(const x of L){const i=it(x.id);if(x.d>NOW)soon++;if(i.s==='want')want++;if(isDeal(x))deal++;if(i.s==='own'){if(x.tp)ownTp++;else own++;paid+=i.paid||0;const v=valOf(x);val+=v!=null?v:(i.paid||0)}}
+  const nOff=L.length-TPC.length;
+  // The headline count stays official-only; third-party owned figures are counted separately but still add to value.
+  $('sOwn').textContent=own+'/'+nOff;$('sOwnL').textContent=ownTp?`figures owned · +${ownTp} 3rd party`:'figures owned';
   $('sVal').textContent=money(val);$('sPaid').textContent=money(paid);
   const g=val-paid;$('sGain').textContent=(g>0?'+':'')+money(g);
   $('sGainBox').className='st'+(g>0?' g':g<0?' r':'');
-  $('cAll').textContent=L.length;$('cOwn').textContent=own;$('cWant').textContent=want;$('cSoon').textContent=soon;
+  $('cAll').textContent=nOff;$('cTp').textContent=TPC.length;$('cOwn').textContent=own+ownTp;$('cWant').textContent=want;$('cSoon').textContent=soon;
   $('cDeal').textContent=deal;$('tDeal').classList.toggle('hot',deal>0);
   return L;
 }
 function timeline(L){
   const ys={};for(let y=2009;y<=2027;y++)ys[y]={n:0,o:0};
+  const tv=view==='tp';L=L.filter(x=>!!x.tp===tv);
   for(const x of L){const y=+String(x.d).slice(0,4);if(ys[y]){ys[y].n++;if(it(x.id).s==='own')ys[y].o++}}
   const max=Math.max(...Object.values(ys).map(v=>v.n),1);
   const keys=Object.keys(ys);
   $('yrs').innerHTML=keys.map(y=>{const v=ys[y];return `<button class="yr${year===y?' on':''}" data-y="${y}" aria-label="${y}: ${v.n} releases, ${v.o} owned"><span class="n">${v.n}</span><span class="b" style="height:${v.n/max*100}%"><span class="o" style="height:${v.n?v.o/v.n*100:0}%"></span></span></button>`}).join('');
   $('lbl').innerHTML=keys.map((y,i)=>`<span>${i%3===0||i===keys.length-1?"'"+y.slice(2):''}</span>`).join('');
-  $('tlT').textContent=year?`YEAR ${year} · TAP TO CLEAR`:'RELEASES BY YEAR';
+  $('tlT').textContent=year?`YEAR ${year} · TAP TO CLEAR`:tv?'3RD PARTY RELEASES BY YEAR':'RELEASES BY YEAR';
 }
 function list(L){
-  const q=$('q').value.trim().toLowerCase(),fs=$('fs').value,ft=$('ft').value,so=$('so').value;
+  const q=$('q').value.trim().toLowerCase(),fs=$('fs').value,ft=$('ft').value,fb=$('fb').value,so=$('so').value,tv=view==='tp';
   let r=L.filter(x=>{const i=it(x.id);
+    if(view==='all'&&x.tp)return false;
+    if(tv&&!x.tp)return false;
+    if(tv&&fb&&x.br!==fb)return false;
     if(view==='own'&&i.s!=='own')return false;
     if(view==='want'&&i.s!=='want')return false;
     if(view==='soon'&&!(x.d>NOW))return false;
     if(view==='deal'&&!isDeal(x))return false;
     if(year&&!String(x.d).startsWith(year))return false;
-    if(fs&&x.s!==fs)return false;if(ft&&x.t!==ft)return false;
-    if(q&&!(x.n.toLowerCase().includes(q)||(i.notes||'').toLowerCase().includes(q)))return false;
+    if(fs&&x.s!==fs)return false;if(ft&&!tv&&x.t!==ft)return false;
+    if(q&&!(x.n.toLowerCase().includes(q)||(i.notes||'').toLowerCase().includes(q)||(x.tp&&(x.br+' '+x.ch).toLowerCase().includes(q))))return false;
     return true});
   const g=x=>{const v=valOf(x),p=it(x.id).paid;return v!=null&&p!=null?v-p:-1e12};
   r.sort(so==='old'?(a,b)=>a.d.localeCompare(b.d):so==='az'?(a,b)=>a.n.localeCompare(b.n):so==='val'?(a,b)=>(valOf(b)??-1)-(valOf(a)??-1):so==='gain'?(a,b)=>g(b)-g(a):so==='rare'?(a,b)=>RAR[b.t]-RAR[a.t]||a.d.localeCompare(b.d):(a,b)=>b.d.localeCompare(a.d));
@@ -185,7 +197,7 @@ function list(L){
     if(v!=null){const d=i.paid!=null?v-i.paid:null;vh=esc(money2(v))+(d!=null&&d!==0?`<small class="${d>0?'up':'dn'}">${d>0?'+':'-'}${esc(money(Math.abs(d)))}</small>`:'')}
     else if(i.s==='want'&&i.target!=null)vh=`<small>target ${esc(money2(i.target))}</small>`;
     const soon=(x.d>NOW?' · <span class="soon">COMING</span>':'')+(isDeal(x)?'<span class="deal">DEAL</span>':'');
-    return `<li class="row" data-id="${esc(x.id)}"><button class="open" data-act="open"><span class="th">${thumb(x,i)}</span><span class="nm">${esc(x.n)}</span><span class="meta">${esc(fd(x.d))} · ${esc(SER[x.s]||'Your entry')} · <span class="stars" title="${RARN[RAR[x.t]]}">${stars(RAR[x.t])}</span>${soon}</span></button><span class="val">${vh}</span><span class="tg"><button class="own" data-act="own" aria-pressed="${i.s==='own'}">OWN</button><button class="want" data-act="want" aria-pressed="${i.s==='want'}">WANT</button></span></li>`}).join('');
+    return `<li class="row" data-id="${esc(x.id)}"><button class="open" data-act="open"><span class="th">${thumb(x,i)}</span><span class="nm">${tpTag(x)}${esc(x.n)}</span><span class="meta">${esc(fd(x.d))} · ${x.tp?esc(x.br)+(x.ch?' · '+esc(x.ch):''):esc(SER[x.s]||'Your entry')+' · '+`<span class="stars" title="${RARN[RAR[x.t]]}">${stars(RAR[x.t])}</span>`}${soon}</span></button><span class="val">${vh}</span><span class="tg"><button class="own" data-act="own" aria-pressed="${i.s==='own'}">OWN</button><button class="want" data-act="want" aria-pressed="${i.s==='want'}">WANT</button></span></li>`}).join('');
 }
 const CHARS=[
   ['Son Goku',n=>/goku/i.test(n)&&!/goku black/i.test(n)],
@@ -212,8 +224,8 @@ function achievements(L){
   const logs=Object.values(state.items).reduce((a,i)=>a+((i.hist||[]).length),0);
   const photos=Object.values(state.items).filter(i=>okId(i.photo)).length;
   const series=new Set(owned.map(x=>x.s).filter(Boolean)).size;
-  const maxChar=Math.max(0,...CHARS.map(([,f])=>owned.filter(x=>f(x.n)).length));
-  const ys={};for(const x of L){if(!x.d||x.d>NOW||x.t==='C')continue;const y=x.d.slice(0,4);(ys[y]=ys[y]||[]).push(x)}
+  const maxChar=Math.max(0,...CHARS.map(([,f])=>owned.filter(x=>!x.tp&&f(x.n)).length));
+  const ys={};for(const x of L){if(!x.d||x.d>NOW||x.t==='C'||x.tp)continue;const y=x.d.slice(0,4);(ys[y]=ys[y]||[]).push(x)}
   const fullYear=Object.values(ys).some(a=>a.length>=2&&a.every(x=>it(x.id).s==='own'))?1:0;
   const c=t=>owned.filter(x=>x.t===t).length;
   return [
@@ -234,6 +246,8 @@ function achievements(L){
     ['scout','PRICE SCOUT','Log 25 prices',logs,25],
     ['photo','PHOTOGRAPHER','Add 10 photos of your figures',photos,10],
     ['dream','DREAM LIST','Put 10 figures on your wishlist',L.filter(x=>it(x.id).s==='want').length,10],
+    ['indie','INDIE SPIRIT','Own a 3rd party figure',owned.filter(x=>x.tp).length,1],
+    ['brands','BRAND HOPPER','Own 3rd party figures from 3 different makers',new Set(owned.filter(x=>x.tp).map(x=>x.br)).size,3],
     ['deal','DEAL SPOTTER','Catch a wishlist figure at your target',L.filter(isDeal).length,1]
   ].map(([id,name,desc,cur,goal,isMoney])=>({id,name,desc,cur:Math.min(cur,goal),goal,isMoney,got:cur>=goal}));
 }
@@ -256,7 +270,7 @@ function badges(L,A){
   const n=A.filter(a=>a.got).length;
   $('bSum').textContent=`BADGES · ${n} OF ${A.length} UNLOCKED`;
   $('bgrid').innerHTML=A.map(a=>`<div class="bdg ${a.got?'got':'lock'}"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#medal"/></svg><div><b>${esc(a.name)}</b><span>${esc(a.desc)}</span><div class="prog" title="${a.cur} of ${a.goal}"><i style="width:${a.cur/a.goal*100}%"></i></div><span>${a.got?'Unlocked':esc(a.isMoney?money(a.cur)+' of '+money(a.goal):a.cur+' of '+a.goal)}</span></div></div>`).join('');
-  const cat=L.filter(x=>x.t!=='C');
+  const cat=L.filter(x=>x.t!=='C'&&!x.tp);
   $('chars').innerHTML=CHARS.map(([name,f])=>{const all=cat.filter(x=>f(x.n)),o=all.filter(x=>it(x.id).s==='own').length;return `<button class="chr${o&&o===all.length?' done':''}" data-c="${esc(name)}"><span>${esc(name)}</span><span class="prog"><i style="width:${all.length?o/all.length*100:0}%"></i></span><em>${o}/${all.length}</em></button>`}).join('');
 }
 function shelfView(L){
@@ -269,6 +283,7 @@ function render(){
   const L=stats();timeline(L);const A=achievements(L);
   const sv=view==='shelf',bv=view==='badges',av=view==='ai';
   $('list').classList.toggle('hide',sv||bv||av);$('vShelf').classList.toggle('hide',!sv);$('vBadges').classList.toggle('hide',!bv);$('vAi').classList.toggle('hide',!av);$('fbox').classList.toggle('hide',sv||bv||av);
+  const tv=view==='tp';$('tpNote').classList.toggle('hide',!tv);$('fb').classList.toggle('hide',!tv);$('ft').classList.toggle('hide',tv);
   $('cBadge').textContent=A.filter(a=>a.got).length;
   if(sv){shelfView(L);scPanel()}else if(bv)badges(L,A);else if(av)aiAvail();else list(L);
   checkBadges(A);
@@ -323,9 +338,9 @@ const ro=new ResizeObserver(chart);ro.observe($('eFig'));
 function fill(){
   const x=all().find(f=>f.id===cur);if(!x)return close();const i=it(cur);
   $('eName').textContent=x.n;
-  $('eMeta').textContent=[x.no?'#'+x.no:'',fd(x.d),SER[x.s]||'Your entry',TYP[x.t]].filter(Boolean).join(' · ')+(x.d>NOW?' · COMING':'');
+  $('eMeta').textContent=(x.tp?[x.br,x.no?'#'+x.no:'',fd(x.d),SER[x.s],x.ch,'3rd party']:[x.no?'#'+x.no:'',fd(x.d),SER[x.s]||'Your entry',TYP[x.t]]).filter(Boolean).join(' · ')+(x.d>NOW?' · COMING':'');
   $('ePort').innerHTML=(okId(i.photo)?`<img src="${esc(photoUrl(i.photo))}" alt="Your photo of ${esc(x.n)}">`:capSvg(x.s))+`<span class="tag">${okId(i.photo)?'YOUR PHOTO':'NO PHOTO YET'}</span>`;
-  const qn=encodeURIComponent('S.H.Figuarts '+x.n);
+  const qn=encodeURIComponent(x.tp?x.br+' '+x.n+' Dragon Ball figure':'S.H.Figuarts '+x.n);
   $('eG').href='https://www.google.com/search?tbm=isch&q='+qn;
   $('eB').href='https://www.ebay.com/sch/i.html?_nkw='+qn+'&LH_Sold=1&LH_Complete=1';
   $('eUp').classList.toggle('hide',!assets);$('eRm').classList.toggle('hide',!assets||!okId(i.photo));
@@ -343,8 +358,8 @@ function fill(){
   const rank=owned.findIndex(f=>f.id===cur);
   const rows=[
     ['Released',fd(x.d)||'—'],['Age',age(x.d)],
-    ['Sold as',TYP[x.t]],['Rarity',x.t==='C'?'—':stars(RAR[x.t])+' '+RARN[RAR[x.t]]],
-    ['Original retail',i.msrp!=null?money2(i.msrp):'—'],['Value vs retail',i.msrp&&v!=null?pct(v/i.msrp-1):'—'],
+    x.tp?['Maker',x.br]:['Sold as',TYP[x.t]],['Rarity',x.t==='C'||x.tp?'—':stars(RAR[x.t])+' '+RARN[RAR[x.t]]],
+    ['Original retail',retail(x)!=null?money2(retail(x))+(i.msrp==null&&x.rt?' (launch price)':''):'—'],['Value vs retail',retail(x)&&v!=null?pct(v/retail(x)-1):'—'],
     ['Days owned',held!=null?held.toLocaleString():'—'],['Yearly return',ann!=null?pct(ann):'—'],
     ['All-time high',vs.length?money2(Math.max(...vs)):'—'],['All-time low',vs.length?money2(Math.min(...vs)):'—'],
     ['Change since 1st log',vs.length>1?pct(vs[vs.length-1]/vs[0]-1):'—'],['Prices logged',String(vs.length)],
@@ -352,7 +367,7 @@ function fill(){
   ];
   $('eKv').innerHTML=rows.map(([k,val])=>`<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join('');
   for(const b of $('eSeg').children)b.setAttribute('aria-pressed',String((i.s||'')===b.dataset.s));
-  $('ePaid').value=i.paid??'';$('eVal').value=i.val??'';$('eMsrp').value=i.msrp??'';$('eCond').value=i.cond||'';$('eDate').value=i.date||'';$('eTarget').value=i.target??'';$('eNotes').value=i.notes||'';
+  $('ePaid').value=i.paid??'';$('eVal').value=i.val??'';$('eMsrp').value=i.msrp??'';$('eMsrp').placeholder=x.rt?String(x.rt):'';$('eCond').value=i.cond||'';$('eDate').value=i.date||'';$('eTarget').value=i.target??'';$('eNotes').value=i.notes||'';
   $('eHist').innerHTML=h.map((q,k)=>`<li><span>${esc(q[0])}</span><span>${esc(money2(q[1]))} <button data-k="${k}" aria-label="Remove entry">✕</button></span></li>`).reverse().join('');
   $('eDel').classList.toggle('hide',x.t!=='C');
   chart();
@@ -377,9 +392,10 @@ $('wX').addEventListener('click',closeWish);
 $('wish').addEventListener('click',e=>{if(e.target===$('wish'))return closeWish();const b=e.target.closest('button');if(!b)return;if(b.id==='wAgain')wishPick();if(b.id==='wOpen'){const id=b.dataset.id;closeWish();open(id)}});
 $('wGo').addEventListener('click',wishPick);
 $('wBud').addEventListener('keydown',e=>{if(e.key==='Enter')wishPick()});
-['q','fs','ft','so'].forEach(k=>$(k).addEventListener('input',render));
+['q','fs','ft','fb','so'].forEach(k=>$(k).addEventListener('input',render));
 $('fs').innerHTML+=Object.entries(SER).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
-$('ft').innerHTML+=Object.entries(TYP).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+$('fb').innerHTML+=BRANDS.map(b=>`<option value="${esc(b)}">${esc(b)} (${TPC.filter(x=>x.br===b).length})</option>`).join('');
+$('ft').innerHTML+=Object.entries(TYP).filter(([k])=>k!=='3P').map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
 
 $('eSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const s=b.dataset.s||null;if((it(cur).s||null)===s)return;snap(s==='own'?'Marked as owned':s==='want'?'Moved to wishlist':'No longer tracked');upd(cur,{s});fill()});
 [['ePaid','paid',num],['eVal','val',num],['eMsrp','msrp',num],['eTarget','target',num],['eCond','cond',v=>v||null],['eDate','date',v=>v||null],['eNotes','notes',v=>v.trim().slice(0,2000)||null]].forEach(([el,k,f])=>$(el).addEventListener('change',()=>{upd(cur,{[k]:f($(el).value)});if(k==='paid'&&it(cur).paid!=null&&it(cur).s!=='own')upd(cur,{s:'own'});fill()}));
